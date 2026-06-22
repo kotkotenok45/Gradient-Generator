@@ -2,134 +2,152 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Gradient Generator</title>
+<title>Ultimate Gradient</title>
 
 <style>
-*{
-  box-sizing:border-box;
-}
-
 body{
-  margin:0;
-  height:100vh;
-  overflow:hidden;
-  background:#000;
-  font-family:Arial;
+ margin:0;
+ height:100vh;
+ overflow:hidden;
+ background:#050505;
 }
 
-#scene{
-  width:100%;
-  height:100%;
-  position:relative;
-  overflow:hidden;
-  filter:blur(0px);
+#bg{
+ position:fixed;
+ inset:0;
+ overflow:hidden;
+ filter:contrast(130%) saturate(160%);
 }
 
-.circle{
-  position:absolute;
-  border-radius:50%;
-  filter:blur(80px);
-  animation:move 12s infinite alternate ease-in-out;
+.blob{
+ position:absolute;
+ border-radius:50%;
+ mix-blend-mode:screen;
+ filter:blur(70px);
+ animation:
+  float 10s infinite ease-in-out,
+  spin 20s infinite linear;
 }
 
-@keyframes move{
-  0%{
-    transform:translate(0,0) scale(1);
-  }
-  50%{
-    transform:translate(300px,-150px) scale(1.4);
-  }
-  100%{
-    transform:translate(-200px,200px) scale(.9);
-  }
+@keyframes float{
+ 0%{
+  transform:translate(0,0) scale(1);
+ }
+ 25%{
+  transform:translate(150px,-100px) scale(1.4);
+ }
+ 50%{
+  transform:translate(-120px,150px) scale(.8);
+ }
+ 100%{
+  transform:translate(0,0) scale(1);
+ }
+}
+
+@keyframes spin{
+ from{
+  rotate:0deg;
+ }
+ to{
+  rotate:360deg;
+ }
 }
 
 
-.panel{
-  position:fixed;
-  top:20px;
-  left:20px;
-  background:#ffffff22;
-  backdrop-filter:blur(20px);
-  padding:15px;
-  border-radius:20px;
-  color:white;
-  z-index:10;
+.noise{
+ position:absolute;
+ inset:0;
+ background:
+ url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.15'/%3E%3C/svg%3E");
+ mix-blend-mode:overlay;
 }
+
 
 button{
-  border:0;
-  padding:10px;
-  border-radius:10px;
-  cursor:pointer;
+ position:fixed;
+ z-index:10;
+ top:20px;
+ left:20px;
+ padding:15px;
+ border-radius:20px;
+ border:0;
+ background:#ffffff22;
+ color:white;
+ backdrop-filter:blur(20px);
 }
 </style>
+
 </head>
 
 <body>
 
-<div id="scene"></div>
+<button onclick="regen()">✨ Новый</button>
 
-<div class="panel">
-  <button onclick="addCircle()">+ Круг</button>
-  <button onclick="randomize()">🎨 Случайно</button>
+<div id="bg">
+<div class="noise"></div>
 </div>
 
 
 <script>
 
-const scene=document.getElementById("scene");
+const bg=document.getElementById("bg");
 
 
-let colors=[
- "#ff0080",
- "#7928ca",
- "#00ffff",
- "#00ff88",
- "#ffcc00"
+let palette=[
+"#ff006e",
+"#8338ec",
+"#3a86ff",
+"#00f5d4",
+"#fee440",
+"#fb5607"
 ];
 
 
-function addCircle(){
+function create(){
 
- let c=document.createElement("div");
+ let b=document.createElement("div");
 
- c.className="circle";
+ b.className="blob";
 
- let size=Math.random()*400+200;
+ let s=Math.random()*500+300;
 
- c.style.width=size+"px";
- c.style.height=size+"px";
+ b.style.width=s+"px";
+ b.style.height=s+"px";
 
- c.style.left=Math.random()*90+"%";
- c.style.top=Math.random()*90+"%";
+ b.style.left=Math.random()*100+"%";
+ b.style.top=Math.random()*100+"%";
 
- c.style.background=
- `radial-gradient(circle, 
- ${colors[Math.floor(Math.random()*colors.length)]},
- transparent 70%)`;
+ let c1=
+ palette[Math.floor(Math.random()*palette.length)];
 
- c.style.animationDuration=
- Math.random()*10+8+"s";
+ let c2=
+ palette[Math.floor(Math.random()*palette.length)];
 
- scene.appendChild(c);
+ b.style.background=
+`radial-gradient(circle,
+${c1},
+${c2},
+transparent 70%)`;
 
+ b.style.animationDuration=
+`${8+Math.random()*12}s,
+${15+Math.random()*20}s`;
+
+ bg.appendChild(b);
 }
 
 
+function regen(){
 
-function randomize(){
+ document.querySelectorAll(".blob")
+ .forEach(x=>x.remove());
 
- scene.innerHTML="";
-
- for(let i=0;i<7;i++){
-   addCircle();
- }
+ for(let i=0;i<12;i++)
+ create();
 
 }
 
-
-randomize();
+regen();
 
 </script>
 
