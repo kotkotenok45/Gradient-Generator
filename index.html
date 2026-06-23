@@ -2,154 +2,268 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Ultimate Gradient</title>
+
+<title>Gradient Generator</title>
 
 <style>
+
 body{
  margin:0;
- height:100vh;
  overflow:hidden;
- background:#050505;
+ background:#050018;
 }
 
-#bg{
+
+canvas{
  position:fixed;
  inset:0;
- overflow:hidden;
- filter:contrast(130%) saturate(160%);
 }
 
-.blob{
- position:absolute;
- border-radius:50%;
- mix-blend-mode:screen;
- filter:blur(70px);
- animation:
-  float 10s infinite ease-in-out,
-  spin 20s infinite linear;
-}
-
-@keyframes float{
- 0%{
-  transform:translate(0,0) scale(1);
- }
- 25%{
-  transform:translate(150px,-100px) scale(1.4);
- }
- 50%{
-  transform:translate(-120px,150px) scale(.8);
- }
- 100%{
-  transform:translate(0,0) scale(1);
- }
-}
-
-@keyframes spin{
- from{
-  rotate:0deg;
- }
- to{
-  rotate:360deg;
- }
-}
-
-
-.noise{
- position:absolute;
- inset:0;
- background:
- url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.15'/%3E%3C/svg%3E");
- mix-blend-mode:overlay;
-}
-
-
-button{
- position:fixed;
- z-index:10;
- top:20px;
- left:20px;
- padding:15px;
- border-radius:20px;
- border:0;
- background:#ffffff22;
- color:white;
- backdrop-filter:blur(20px);
-}
 </style>
 
 </head>
 
+
 <body>
 
-<button onclick="regen()">✨ Новый</button>
-
-<div id="bg">
-<div class="noise"></div>
-</div>
+<canvas id="c"></canvas>
 
 
 <script>
 
-const bg=document.getElementById("bg");
+const canvas =
+document.getElementById("c");
+
+const ctx =
+canvas.getContext("2d");
 
 
-let palette=[
-"#ff006e",
-"#8338ec",
-"#3a86ff",
-"#00f5d4",
-"#fee440",
-"#fb5607"
+let w,h;
+
+function resize(){
+
+ w=canvas.width=innerWidth;
+ h=canvas.height=innerHeight;
+
+}
+
+resize();
+
+onresize=resize;
+
+
+
+let blobs=[];
+
+
+let colors=[
+ [255,0,140],
+ [120,40,255],
+ [0,220,255],
+ [0,255,160],
+ [255,220,0]
 ];
 
 
-function create(){
 
- let b=document.createElement("div");
+class Blob{
 
- b.className="blob";
+constructor(side){
 
- let s=Math.random()*500+300;
+ this.r=150+Math.random()*300;
 
- b.style.width=s+"px";
- b.style.height=s+"px";
+ this.speed=.002+Math.random()*.004;
 
- b.style.left=Math.random()*100+"%";
- b.style.top=Math.random()*100+"%";
+ this.t=Math.random()*100;
 
- let c1=
- palette[Math.floor(Math.random()*palette.length)];
 
- let c2=
- palette[Math.floor(Math.random()*palette.length)];
+ let c=
+ colors[
+ Math.floor(Math.random()*colors.length)
+ ];
 
- b.style.background=
-`radial-gradient(circle,
-${c1},
-${c2},
-transparent 70%)`;
+ this.color=c;
 
- b.style.animationDuration=
-`${8+Math.random()*12}s,
-${15+Math.random()*20}s`;
 
- bg.appendChild(b);
+ if(side==0){
+
+  this.x=-300;
+  this.y=Math.random()*h;
+
+  this.dx=1;
+
+ }
+
+ else if(side==1){
+
+  this.x=w+300;
+  this.y=Math.random()*h;
+
+  this.dx=-1;
+
+ }
+
+ else if(side==2){
+
+  this.x=Math.random()*w;
+  this.y=-300;
+
+  this.dy=1;
+
+ }
+
+ else{
+
+  this.x=Math.random()*w;
+  this.y=h+300;
+
+  this.dy=-1;
+
+ }
+
+
 }
 
 
-function regen(){
+update(){
 
- document.querySelectorAll(".blob")
- .forEach(x=>x.remove());
+ this.t+=this.speed;
 
- for(let i=0;i<12;i++)
- create();
+ this.x+=Math.sin(this.t)*1.2;
+
+ this.y+=Math.cos(this.t)*1.2;
+
 
 }
 
-regen();
+
+draw(){
+
+
+let g =
+ctx.createRadialGradient(
+this.x,this.y,0,
+this.x,this.y,this.r
+);
+
+
+let c=this.color;
+
+
+g.addColorStop(
+0,
+`rgba(${c},0.9)`
+);
+
+
+g.addColorStop(
+1,
+"rgba(0,0,0,0)"
+);
+
+
+
+ctx.fillStyle=g;
+
+ctx.beginPath();
+
+ctx.arc(
+this.x,
+this.y,
+this.r,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+
+}
+
+}
+
+
+
+function spawn(){
+
+ blobs.push(
+ new Blob(
+ Math.floor(Math.random()*4)
+ )
+ );
+
+}
+
+
+for(let i=0;i<15;i++)
+spawn();
+
+
+
+setInterval(spawn,1500);
+
+
+
+function animate(){
+
+requestAnimationFrame(animate);
+
+
+ctx.clearRect(0,0,w,h);
+
+
+
+let bg =
+ctx.createLinearGradient(
+0,0,w,h
+);
+
+
+bg.addColorStop(
+0,
+"#12002f"
+);
+
+bg.addColorStop(
+.5,
+"#002b4f"
+);
+
+bg.addColorStop(
+1,
+"#200018"
+);
+
+
+ctx.fillStyle=bg;
+
+ctx.fillRect(0,0,w,h);
+
+
+
+ctx.globalCompositeOperation="lighter";
+
+
+blobs.forEach(b=>{
+
+ b.update();
+ b.draw();
+
+});
+
+
+ctx.globalCompositeOperation="source-over";
+
+
+}
+
+
+
+animate();
+
 
 </script>
+
 
 </body>
 </html>
